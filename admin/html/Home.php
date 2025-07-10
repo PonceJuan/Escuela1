@@ -1,6 +1,6 @@
 <!--Importa el HEADER (Menu lateral)-->
 <?php require('Header.php') ?>
-
+<?php include('Alumnos.php') ?>
 
 
 

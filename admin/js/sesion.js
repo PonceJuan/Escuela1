@@ -30,7 +30,7 @@ function VerificarUsuario() {
                         }else{
                           //---------Escritura:
                           sessionStorage.setItem("IdAdministrador", user.uid);
-                          window.location.href ="../html/Home.php";
+                          window.location.href ="../html/Alumnos.php";
                         }
             });
           // ...

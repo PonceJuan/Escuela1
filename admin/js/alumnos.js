@@ -15,23 +15,28 @@ let generalIdTutor2="";
 let generalFoto="";
 let generalNombre="";
 let generalIdMaestra="";
-
 $('#Escuelas').change(function () {
-    idEsc = $(this).val(); // Obtenemos el ID de la escuela seleccionada
+    idEsc = $(this).val();
     $('#contenedorSubir').show();
     sessionStorage.setItem("idEscuela", idEsc);
     
     ruta = rut2("BeeplayAlumnos", idEsc, "Alumnos");
 
+    // 🧼 Destruye tabla principal si ya existe
+    if ( $.fn.DataTable.isDataTable('#tablaMaster') ) {
+        $('#tablaMaster').DataTable().clear().destroy();
+    }
+
     dataSet = [];
     let oculto = [0,7,9,10,11];
-    let botones = "<div class='wrapper text-center'><div class='btn-group'><button class='btnVer btn btn-success' data-toggle='tooltip' title='Editar Datos'>"+window.iconoVer+"</button><button class='btnEliminar btn btn-danger' data-toggle='tooltip' title='Editar Datos'>"+window.iconoBorrar+"</button><button class='btnQr btn btn-success' data-toggle='tooltip' title='Editar Datos'>"+window.iconoClave+"</button></div></div>"
+    let botones = "<div class='wrapper text-center'><div class='btn-group'><button class='btnVer btn btn-success' data-toggle='tooltip' title='Editar Datos'>"+window.iconoVer+"</button><button class='btnEliminar btn btn-danger' data-toggle='tooltip' title='Editar Datos'>"+window.iconoBorrar+"</button><button class='btnQr btn btn-success' data-toggle='tooltip' title='Editar Datos'>"+window.iconoClave+"</button></div></div>";
 
-    $('#tablaMaster').dataTable().fnDestroy();
     tab = crearTABLA1(dataSet, botones, oculto);
+tab.clear().draw(); // Limpia todo antes de comenzar a llenar
 
-    ruta.on("child_added", datos => {
-        dataSet = [
+ruta.once("value", snapshot => {
+    snapshot.forEach(datos => {
+        let dataSet = [
             datos.key,
             datos.child("NombreAlumno").val(),
             datos.child("NombreMaestra").val(),
@@ -45,9 +50,10 @@ $('#Escuelas').change(function () {
             datos.child("idTutor1").val(),
             datos.child("idTutor2").val()
         ];
-        tab.rows.add([dataSet]).draw();
+        tab.rows.add([dataSet]);
     });
-
+    tab.draw(); // Dibuja una sola vez al final
+});
     ruta.on('child_changed', datos => {
         dataSet = [
             datos.key,
@@ -70,15 +76,19 @@ $('#Escuelas').change(function () {
         tab.row(filaEliminada.parents('tr')).remove().draw();
     });
 
-    // Carga maestros
+    // 🔄 Cargar profesores
     $('#Profesores option').remove();
     let escuelaPicker = rut2("BeeplayProfesores", idEsc, "Profesores"); 
     escuelaPicker.orderByChild("NombreProfesor").on("child_added", datos => {
-        let cargarEscuela = '<option value=' + datos.key + '>' + datos.child("NombreProfesor").val() + '</option>'
+        let cargarEscuela = '<option value=' + datos.key + '>' + datos.child("NombreProfesor").val() + '</option>';
         document.getElementById("Profesores").insertAdjacentHTML("beforeend", cargarEscuela);
     });
 
-    // Carga tutores tabla 1
+    // 🔄 Cargar tutores tablaMaster2
+    if ( $.fn.DataTable.isDataTable('#tablaMaster2') ) {
+        $('#tablaMaster2').DataTable().clear().destroy();
+    }
+
     let tablaTutor1 = $('#tablaMaster2').DataTable({
         pageLength: 5,
         lengthMenu: [[5, 10, 20, -1], [5, 10, 20, 'Todos']],
@@ -95,7 +105,11 @@ $('#Escuelas').change(function () {
         tablaTutor1.rows.add([dataSet]).draw();
     });
 
-    // Carga tutores tabla 2
+    // 🔄 Cargar tutores tablaMaster3
+    if ( $.fn.DataTable.isDataTable('#tablaMaster3') ) {
+        $('#tablaMaster3').DataTable().clear().destroy();
+    }
+
     let tablaTutor2 = $('#tablaMaster3').DataTable({
         pageLength: 5,
         lengthMenu: [[5, 10, 20, -1], [5, 10, 20, 'Todos']],
