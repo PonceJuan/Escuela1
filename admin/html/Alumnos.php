@@ -110,12 +110,12 @@
                 <br>
               
                 <button type="submit" id="btnNuevo"  class="btn btn-primary" translate="1">Agregar un Alumno</button> <br>
-                <div id="contenedorSubir">
+                <div id="contenedorSubir"> 
                 
 
                 <input type="file" id="inputExcel" accept=".xlsx" class="form-control">
-<button id="btnCargarExcel" class="btn btn-success mt-2">Cargar desde Excel</button>
-<div id="mensajeCarga" class="mt-2 text-success"></div>
+                    <button id="btnCargarExcel" class="btn btn-success mt-2">Cargar desde Excel</button>
+                    <div id="mensajeCarga" class="mt-2 text-success"></div>
 
                 </div>
                  

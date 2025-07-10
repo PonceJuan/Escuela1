@@ -24,7 +24,7 @@ function VerificarUsuario() {
 
           ruta.orderByChild("idEscuela").equalTo(user.uid).on("child_added", datos => { 
             sessionStorage.setItem("IdEscuela", user.uid);
-            window.location.href ="../html/Home.php"; 
+            window.location.href ="../html/Alumnos.php"; 
             llamada = 1;   
           });
 

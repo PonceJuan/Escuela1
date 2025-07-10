@@ -1,6 +1,7 @@
 <!--Importa el HEADER (Menu lateral)-->
 <?php require('Header.php') ?>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+ 
 <div class="main-content container-fluid">
         <div class="page-title">
             <div class="row">
@@ -13,6 +14,8 @@
         <section class="section">
             <div class="card">
                 <div class="card-header">
+
+              
                     
 
                     <!--scrolling content Modal -->
@@ -108,7 +111,11 @@
 
 
 
-                <button type="submit" id="btnNuevo"  class="btn btn-primary" translate="1">Agregar un Alumno</button>
+                <button type="submit" id="btnNuevo"  class="btn btn-primary" translate="1">Agregar un Alumno</button> <br>
+
+                  <input type="file" id="inputExcel" accept=".xlsx" class="form-control">
+                    <button id="btnCargarExcel" class="btn btn-success mt-2">Cargar desde Excel</button>
+                    <div id="mensajeCarga" class="mt-2 text-success"></div>
                  
              </div>
 
@@ -255,16 +262,44 @@
 <!--Importa la GUARDAR FOTOS-->
 <script src="../../js/savephoto.js"></script>
 
+
+
 <script>
+document.getElementById("btnCargarExcel").addEventListener("click", async () => {
+    const file = document.getElementById("inputExcel").files[0];
+    if (!file) return alert("Selecciona un archivo .xlsx primero");
 
-let escuelaPicker = rut("BeeplayCodigosEscuelas");
-let selectElemnt = document.getElementById("Escuelas");
-escuelaPicker.on("child_added", datos =>{
-    let cargarEscuela = '<option value='+ datos.child("idEscuela").val() +'>'+datos.child("NombreEscuela").val()+'</option>'
-    selectElemnt.insertAdjacentHTML("beforeend",cargarEscuela);
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet);
+
+        const db = firebase.database();
+        const idEscuela = sessionStorage.getItem("IdEscuela");
+        const ruta = db.ref(`projects/proj_njgpnbYAnHNy8HFVWbr4Py/data/BeeplayAlumnos/${idEscuela}/Alumnos`);
+        
+        rows.forEach((row, index) => {
+            const alumno = {
+                NombreAlumno: row["Nombre"] || "",
+                TelefonoEmergencia: row["Teléfono"] || "",
+                TipoSangre: row["TipoSangre"] || "",
+                Alergias: row["Alergias"] || ""
+            };
+            const id = new Date().getTime() + index;
+            ruta.child(id).set(alumno);
+        });
+
+        document.getElementById("mensajeCarga").innerText = "✅ Alumnos cargados satisfactoriamente.";
+    };
+
+    reader.readAsArrayBuffer(file);
 });
-
 </script>
+
+
 
 
 
