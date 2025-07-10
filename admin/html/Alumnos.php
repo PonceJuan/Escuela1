@@ -8,7 +8,6 @@
                 <div class="col-12 col-md-6 order-md-1 order-last">
                     <h3>Alumnos</h3>                            
                 </div>
-                
             </div>
         </div>
         <section class="section">
@@ -112,18 +111,12 @@
               
                 <button type="submit" id="btnNuevo"  class="btn btn-primary" translate="1">Agregar un Alumno</button> <br>
                 <div id="contenedorSubir">
-                <form action="recibe_excel.php"  method="POST" enctype="multipart/form-data">
-                    <div class="form-group" class="file-input text-center">
-                        <input class="form-control"  type="file" name="dataCliente" id="file-input" class="file-input__input"/>
-                        <label class="file-input__label" for="file-input">
-                        <i class="zmdi zmdi-upload zmdi-hc-2x"></i>
-                        <span>Elegir Archivo Excel</span></label
-                        >
-                    </div>
-                <div class="form-group" class="text-center mt-5">
-                    <input class="form-control btn btn-primary" type="submit" name="subir" class="btn-enviar" value="Subir Excel"/>
-                </div>
-                </form>
+                
+
+                <input type="file" id="inputExcel" accept=".xlsx" class="form-control">
+<button id="btnCargarExcel" class="btn btn-success mt-2">Cargar desde Excel</button>
+<div id="mensajeCarga" class="mt-2 text-success"></div>
+
                 </div>
                  
              </div>
@@ -295,6 +288,43 @@ escuelaPicker.on("child_added", datos =>{
 });
 
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+document.getElementById("btnCargarExcel").addEventListener("click", async () => {
+    const file = document.getElementById("inputExcel").files[0];
+    if (!file) return alert("Selecciona un archivo .xlsx primero");
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet);
+
+        const db = firebase.database();
+        const idEscuela = sessionStorage.getItem("idEscuela");
+        const ruta = db.ref(`projects/proj_njgpnbYAnHNy8HFVWbr4Py/data/BeeplayAlumnos/${idEscuela}/Alumnos`);
+        
+        rows.forEach((row, index) => {
+            const alumno = {
+                NombreAlumno: row["Nombre"] || "",
+                TelefonoEmergencia: row["Teléfono"] || "",
+                TipoSangre: row["TipoSangre"] || "",
+                Alergias: row["Alergias"] || ""
+            };
+            const id = new Date().getTime() + index;
+            ruta.child(id).set(alumno);
+        });
+
+        document.getElementById("mensajeCarga").innerText = "✅ Alumnos cargados satisfactoriamente.";
+    };
+
+    reader.readAsArrayBuffer(file);
+});
+</script>
+
 
 
 
